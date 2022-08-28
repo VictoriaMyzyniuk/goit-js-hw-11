@@ -47,7 +47,6 @@ function toGetImages() {
         simpleLightBox.refresh();
 
         if (total === totalHits) {
-          console.log(totalHits);
           Notiflix.Notify.info(
             `We're sorry, but you've reached the end of search results.`
           );

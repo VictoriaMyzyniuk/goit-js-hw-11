@@ -12,8 +12,6 @@ export default class ImgApiService {
     const response = await axios.get(
       `${BASE_URL}?key=${KEY}&q=${this.searchQuery}&image-type=photo&orientation=horizontal&safesearch=true&page=${this.page}&per_page=40`
     );
-    // this.incrementPage();
-    console.log(response.data);
     return response.data;
   }
 
