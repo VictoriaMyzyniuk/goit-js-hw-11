@@ -30,14 +30,3 @@ export default class ImgApiService {
     this.searchQuery = newQuery;
   }
 }
-
-// async function fetchImg(e) {
-//   const text = e.target.value;
-//   const response = await fetch(
-//     ${BASE_URL}?key=${KEY}&q=${text}&image-type=photo&orientation=horizontal&safesearch=true&page=1&per_page=40
-//   );
-//   const result = await response.json();
-//   console.log(result);
-//   console.log(text);
-//   return result;
-// }

@@ -7,8 +7,6 @@ body {
     Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* background-color: #fafafa; */
-  /* color: #212121; */
   color: green;
   line-height: 1.5;
   background-image: linear-gradient(to left, green, white);
@@ -22,8 +20,6 @@ body {
   justify-content: center;
   align-items: center;
   margin-bottom: 30px;
-  /* background-color: green; */
-  /* background-image: linear-gradient(green, lightgreen); */
 }
 
 input {
