@@ -1,77 +1,115 @@
 import './css/styles.css';
 import ImgApiService from './fetchImg';
-import Notiflix from 'notiflix';
+import Notiflix, { Loading } from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-var debounce = require('lodash.debounce');
 
 const ImgEl = new ImgApiService();
 
-const BASE_URL = 'https://pixabay.com/api/';
-const KEY = '29542171-d27caeadb94251ff2cc88b8a0';
-const DEBOUNCE_DELAY = 500;
-
 const formEl = document.querySelector('#search-form');
-const inputEl = document.querySelector('input');
-const markupContainer = document.querySelector('.gallery');
+const gallery = document.querySelector('.gallery');
+
+let simpleLightBox = new SimpleLightbox('.gallery a');
 
 formEl.addEventListener('submit', onFormSubmit);
-// inputEl.addEventListener('input', debounce(fetchImg, DEBOUNCE_DELAY));
+window.addEventListener('scroll', onScrollLoad);
 
+function onScrollLoad() {
+  const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+  if (clientHeight + scrollTop >= scrollHeight) {
+    toGetImages();
+  }
+}
+
+function toGetImages() {
+  ImgEl.fetchImg()
+    .then(({ total, totalHits, hits }) => {
+      if (hits.length === 0 && totalHits === 0 && total === 0) {
+        Notiflix.Notify.failure(
+          'Sorry, there are no images matching your search query. Please try again.'
+        );
+      } else {
+        insertMarkup(hits);
+
+        if (ImgEl.page === 1) {
+          Notiflix.Notify.success(`Horray! We found ${totalHits} images`);
+        } else {
+          const { height: cardHeight } = document
+            .querySelector('.gallery')
+            .firstElementChild.getBoundingClientRect();
+
+          window.scrollBy({
+            top: cardHeight * 2,
+            behavior: 'smooth',
+          });
+        }
+
+        simpleLightBox.refresh();
+
+        if (total === totalHits) {
+          console.log(totalHits);
+          Notiflix.Notify.info(
+            `We're sorry, but you've reached the end of search results.`
+          );
+        }
+        ImgEl.incrementPage();
+      }
+    })
+    .catch(() => {
+      Notiflix.Notify.failure('Oops, something went wrong');
+    })
+    .finally(() => {
+      formEl.reset();
+    });
+}
 function onFormSubmit(e) {
   e.preventDefault();
 
   ImgEl.query = e.currentTarget.elements.searchQuery.value.trim();
   ImgEl.resetPage();
-  ImgEl.fetchImg().then(({ totalHits, hits }) => {
-    if (hits.length === 0) {
-      Notiflix.Notify.failure(
-        'Sorry, there are no images matching your search query. Please try again.'
-      );
-    } else {
-      insertMarkup(hits);
-      Notiflix.Notify.success(`Horray! We found ${totalHits} images`);
-    }
-  });
+  gallery.innerHTML = '';
+  toGetImages();
 }
 
-// function insertMarkup(params) {
-//   markupContainer.insertAdjacentHTML('beforeend', `<div>cats</div>`);
-// }
 function insertMarkup(array) {
   const galeryMarkup = array
-    .map(({ previewURL, tags, likes, views, comments, downloads }) => {
-      return `
-    <div class="photo-card">
-    <a>
-  <img src="${previewURL}" alt="${tags}" loading="lazy" />
-  </a>
-  <div class="info">
-    <p class="info-item">
-      <b>Likes:</b>
-      ${likes}
-    </p>
-    <p class="info-item">
-      <b>Views:</b>
-      ${views}
-    </p>
-    <p class="info-item">
-      <b>Comments:</b>
-      ${comments}
-    </p>
-    <p class="info-item">
-      <b>Downloads:</b>
-      ${downloads}
-    </p>
-  </div>
-</div>`;
-    })
+    .map(
+      ({
+        largeImageURL,
+        webformatURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) => {
+        return `
+      <a href="${largeImageURL}" class="gallery__link">
+        <div class="photo-card">
+           <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+        <div class="info">
+          <p class="info-item">
+            <b>Likes:</b>
+            ${likes}
+          </p>
+          <p class="info-item">
+            <b>Views:</b>
+            ${views}
+          </p>
+          <p class="info-item">
+            <b>Comments:</b>
+            ${comments}
+          </p>
+          <p class="info-item">
+            <b>Downloads:</b>
+            ${downloads}
+          </p>
+        </div>
+      </div>
+      </a>`;
+      }
+    )
     .join('');
 
-  markupContainer.insertAdjacentHTML('beforeEnd', galeryMarkup);
-  new SimpleLightbox('.gallery a', {
-    captionsData: 'alt',
-    captionPosition: 'bottom',
-    captionDelay: '250',
-  });
+  gallery.insertAdjacentHTML('beforeEnd', galeryMarkup);
 }
