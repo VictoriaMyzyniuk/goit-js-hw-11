@@ -5,6 +5,7 @@ import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const ImgEl = new ImgApiService();
+let isEventListenerOnScroll = false;
 
 const formEl = document.querySelector('#search-form');
 const gallery = document.querySelector('.gallery');
@@ -12,7 +13,6 @@ const gallery = document.querySelector('.gallery');
 let simpleLightBox = new SimpleLightbox('.gallery a');
 
 formEl.addEventListener('submit', onFormSubmit);
-window.addEventListener('scroll', onScrollLoad);
 
 function onScrollLoad() {
   const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
@@ -32,6 +32,11 @@ function toGetImages() {
         insertMarkup(hits);
 
         if (ImgEl.page === 1) {
+          if (!isEventListenerOnScroll) {
+            window.addEventListener('scroll', onScrollLoad);
+            isEventListenerOnScroll = true;
+          }
+
           Notiflix.Notify.success(`Horray! We found ${totalHits} images`);
         } else {
           const { height: cardHeight } = document
@@ -50,6 +55,8 @@ function toGetImages() {
           Notiflix.Notify.info(
             `We're sorry, but you've reached the end of search results.`
           );
+          window.removeEventListener('scroll', onScrollLoad);
+          isEventListenerOnScroll = false;
         }
         ImgEl.incrementPage();
       }
